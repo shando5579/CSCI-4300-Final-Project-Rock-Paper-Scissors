@@ -11,6 +11,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Scanner;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -18,68 +19,64 @@ import javax.swing.JPanel;
 
 public class RockPaperScissorsClient {
 	
-	private JFrame frame = new JFrame("Tic Tac Toe");
+	private JFrame frame = new JFrame("Rock Paper Scissors Game Client");
     private JLabel messageLabel = new JLabel("");
     private ImageIcon icon;
     private ImageIcon opponentIcon;
+    
+    private JButton rockButton, paperButton, scissorsButton;
 	
 	private static int PORT = 8901;
     private Socket socket;
     private BufferedReader in;
     private PrintWriter out;
 
-    // Establishes connection, sets up GUI, and 
+    // Establishes connection and sets up GUI
 	public RockPaperScissorsClient(String serverAddress) throws Exception {
+		
 		// Setup networking
         socket = new Socket(serverAddress, PORT);
         in = new BufferedReader(new InputStreamReader(
             socket.getInputStream()));
         out = new PrintWriter(socket.getOutputStream(), true);
         
-        /*
         // Layout GUI
         messageLabel.setBackground(Color.lightGray);
         frame.getContentPane().add(messageLabel, "South");
 
-        JPanel boardPanel = new JPanel();
-        boardPanel.setBackground(Color.black);
-        boardPanel.setLayout(new GridLayout(3, 3, 2, 2));
-        for (int i = 0; i < board.length; i++) {
-            final int j = i;
-            board[i] = new Square();
-            board[i].addMouseListener(new MouseAdapter() {
-                public void mousePressed(MouseEvent e) {
-                    currentSquare = board[j];
-                    out.println("MOVE " + j);}});
-            boardPanel.add(board[i]);
-        }
-        frame.getContentPane().add(boardPanel, "Center");
-        */
+        JPanel panel = new JPanel();
+        panel.setBackground(Color.black);
         
+        //Adds buttons
+        rockButton = new JButton("Rock");
+        paperButton = new JButton("Paper");
+        scissorsButton = new JButton("Scissors");
+        
+        panel.add(rockButton);
+        panel.add(paperButton);
+        panel.add(scissorsButton);
+
+        frame.getContentPane().add(panel, "Center");
+
 	}
 	
 	public void playGame() throws Exception {
-		/*
+		
 		String response;
         try {
             response = in.readLine();
             if (response.startsWith("WELCOME")) {
+            	/*
                 char mark = response.charAt(8);
                 icon = new ImageIcon(mark == 'X' ? "xsml.png" : "osml.png");
                 opponentIcon  = new ImageIcon(mark == 'X' ? "osml.png" : "xsml.png");
                 frame.setTitle("Rock Paper Scissors - Player " + mark);
+                */
             }
             while (true) {
                 response = in.readLine();
-                if (response.startsWith("VALID_MOVE")) {
-                    messageLabel.setText("Valid move, please wait");
-                    currentSquare.setIcon(icon);
-                    currentSquare.repaint();
-                } else if (response.startsWith("OPPONENT_MOVED")) {
-                    int loc = Integer.parseInt(response.substring(15));
-                    board[loc].setIcon(opponentIcon);
-                    board[loc].repaint();
-                    messageLabel.setText("Opponent moved, your turn");
+                if (response.startsWith("OPPONENT_CHOSE")) {
+                    messageLabel.setText("Opponent chose, your turn");
                 } else if (response.startsWith("VICTORY")) {
                     messageLabel.setText("You win");
                     break;
@@ -98,10 +95,10 @@ public class RockPaperScissorsClient {
         finally {
             socket.close();
         }
-        */
+        
 	}
 	
-	/*
+	
 	private boolean wantsToPlayAgain() {
         int response = JOptionPane.showConfirmDialog(frame,
             "Want to play again?",
@@ -110,24 +107,24 @@ public class RockPaperScissorsClient {
         frame.dispose();
         return response == JOptionPane.YES_OPTION;
     }
-    */
+    
 	
 	public static void main(String[] args) throws Exception {
         while (true) {
-        	// 23. What is the purpose of the following line?        	
             String serverAddress = (args.length == 0) ? "localhost" : args[0];
             RockPaperScissorsClient client = new RockPaperScissorsClient(serverAddress);
             
-            /*
             client.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            client.frame.setSize(240, 160);
+            client.frame.setSize(680, 400);
             client.frame.setVisible(true);
             client.frame.setResizable(false);
-            client.play();
+            client.playGame();
+            
             if (!client.wantsToPlayAgain()) {
                 break;
             }
-            */
+            
+            
         }
     }
 
