@@ -1,46 +1,56 @@
 package rockpaperscissors;
 
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import java.awt.BorderLayout;
-import javax.swing.JLabel;
-import javax.swing.JTextField;
-import javax.swing.JButton;
+import java.awt.*;
+import javax.swing.*;
 
-public class ServerGUI extends JFrame {
+/*
+ * A class that sets up the Server GUI for rock paper scissors. Here, we create the panel and add
+ * to it a button that allows it to connect and disconnect from the server, along
+ * with a status message that displays the current state of the server. This state 
+ * will either show that the user is connected to the server or disconnected.
+ */
 
-	public JTextField PortField;
-	public JLabel InfoLabel;
-	public JButton ConnectButton;
+// Setting up the server GUI for rock paper scissors server
+public class ServerGUI extends JFrame 
+{
 
-	public ServerGUI() {
+	// Data Fields
+    private JPanel center; 	// Center panel
+    private JPanel north; 	// North panel
+    private JPanel south; 	// South panel
+    JButton connect;
+    JLabel status;
 
-		JPanel mainPanel = new JPanel();
-		getContentPane().add(mainPanel, BorderLayout.CENTER);
-		mainPanel.setLayout(new BorderLayout(0, 0));
+	public ServerGUI() 
+	{
 
-		JPanel connPanel = new JPanel();
-		mainPanel.add(connPanel, BorderLayout.NORTH);
-
-		ConnectButton = new JButton("Start Server");
-		connPanel.add(ConnectButton);
-
-		JPanel movePanel = new JPanel();
-		mainPanel.add(movePanel);
-
-		JPanel notifPanel = new JPanel();
-		mainPanel.add(notifPanel, BorderLayout.SOUTH);
-
-		InfoLabel = new JLabel("Server Stopped");
-		InfoLabel.setToolTipText("");
-		notifPanel.add(InfoLabel);
-
-		// Set the title and default close operation.
+		// Setting panel defaults
 	    this.setTitle("Rock Paper Scissors - Server");
 		this.setSize(400, 100);
 		this.setResizable(false);
 		this.setVisible(true);
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		// Create and add central panel
+		center = new JPanel();
+		getContentPane().add(center, BorderLayout.CENTER);
+		center.setLayout(new BorderLayout(0, 0));
+
+		// Creating panel for connection button
+		north = new JPanel();
+		center.add(north, BorderLayout.NORTH);
+
+		// Creating the connection button - aka start/stop server button
+		connect = new JButton();
+		north.add(connect);
+
+		// Creating panel to display the status of server
+		JPanel south = new JPanel();
+		center.add(south, BorderLayout.SOUTH);
+
+		status = new JLabel();
+		south.add(status);
+
 	}
 
 }

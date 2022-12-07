@@ -6,9 +6,18 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.concurrent.TimeUnit;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+
+/*
+ * A class that sets up the client for rock paper scissors and handles communications 
+ * to and from the server. These communications are sent through an BufferedReader and
+ * PrintWriter object. Each piece of data communicated will be a string that begins with
+ * a keyword to help identify what the client / server should do. Once the game has concl-
+ * uded, a winner will be chosen. The winner will be indicated only on the GUI of the pla-
+ * yer who chose first. This is a bug with the server communication. Both users will be
+ * prompted for a rematch at the end of the game and the clients will update successfully.
+ */
 
 public class RockPaperScissorsClient {
 
@@ -42,7 +51,7 @@ public class RockPaperScissorsClient {
 		// Action listener for when rock button is pressed
 		gui.rockButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				out.println("MR");
+				out.println("CHOICE_ROCK");
 				gui.rockButton.setEnabled(false);
 				gui.paperButton.setEnabled(false);
 				gui.scissorsButton.setEnabled(false);
@@ -53,7 +62,7 @@ public class RockPaperScissorsClient {
 		// Action listener for when paper button is pressed
 		gui.paperButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				out.println("MP");
+				out.println("CHOICE_PAPER");
 				gui.rockButton.setEnabled(false);
 				gui.paperButton.setEnabled(false);
 				gui.scissorsButton.setEnabled(false);
@@ -64,7 +73,7 @@ public class RockPaperScissorsClient {
 		// Action listener for when scissors button is pressed
 		gui.scissorsButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				out.println("MS");
+				out.println("CHOICE_SCISSORS");
 				gui.rockButton.setEnabled(false);
 				gui.paperButton.setEnabled(false);
 				gui.scissorsButton.setEnabled(false);
@@ -77,10 +86,12 @@ public class RockPaperScissorsClient {
 	public void play() throws Exception {
 		String serverResponse;
 		try {
+			
 			serverResponse = in.readLine();
+			
 			// Sets up new player connection and updates GUI
-			if (serverResponse.startsWith("N")) {
-				this.playerNumber = Integer.parseInt(serverResponse.substring(1));
+			if (serverResponse.startsWith("NEW_")) {
+				this.playerNumber = Integer.parseInt(serverResponse.substring(4));
 				gui.setTitle("Rock Paper Scissors - Player #" + this.playerNumber);
 				gui.infoLabel.setText("Connected - Waiting for Opponent");
 			}
@@ -91,24 +102,24 @@ public class RockPaperScissorsClient {
 				if (serverResponse != null) {
 					
 					// Tells players start
-					if (serverResponse.startsWith("G")) {
+					if (serverResponse.startsWith("START")) {
 						gui.infoLabel.setText("All Players Connected - Make Your Choice");
 						gui.rockButton.setEnabled(true);
 						gui.paperButton.setEnabled(true);
 						gui.scissorsButton.setEnabled(true);
 
 						// Outputs to label if player won
-					} else if (serverResponse.startsWith("W")) {
+					} else if (serverResponse.startsWith("WIN")) {
 						gui.infoLabel.setText("You have won!");
 						break;
 						
-						// Outputs to label if player was beaten
-					} else if (serverResponse.startsWith("D")) {
-						gui.infoLabel.setText("You have been beaten");
+						// Outputs to label if player was defeated
+					} else if (serverResponse.startsWith("DEFEAT")) {
+						gui.infoLabel.setText("You have been defeated");
 						break;
 						
 						// Outputs to label if both players tied
-					} else if (serverResponse.startsWith("T")) {
+					} else if (serverResponse.startsWith("TIE")) {
 						gui.infoLabel.setText("You have both tied");
 						break;
 					}
@@ -127,6 +138,7 @@ public class RockPaperScissorsClient {
 				"Rock Paper Scissors - Rematch", 
 				JOptionPane.YES_NO_OPTION);
 		gui.dispose();
+		out.println("QUIT");
 		return response == JOptionPane.YES_OPTION;
 	}
 
@@ -135,7 +147,8 @@ public class RockPaperScissorsClient {
 		while (true) {	
 			String serverAddress = (args.length == 0) ? "localhost" : args[0];				// Sets address to "localhost"
 			RockPaperScissorsClient client = new RockPaperScissorsClient(serverAddress);	// Client is created using server address and port
-				client.play();							// Tells the client to play the game
+			client.play();																	// Tells the client to play the game
+			
 				if (!client.wantsToPlayAgain()) {		// Once client is done playing, asks if it wants to play again
 					break;
 				}
