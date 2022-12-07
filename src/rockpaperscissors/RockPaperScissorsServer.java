@@ -25,19 +25,17 @@ public class RockPaperScissorsServer {
 				try {
 					if (!running) {
 						System.out.println("RPSServer() - Connect button selected, starting server");
-						socket = new ServerSocket(Integer.parseInt(gui.PortField.getText()));
+						socket = new ServerSocket(8081);
 						if (!socket.isClosed())
 							running = true;
 						gui.ConnectButton.setText("Stop Server");
 						gui.InfoLabel.setText("Server Started");
-						gui.PortField.setEditable(false);
 					} else {
 						System.out.println("RPSServer() - Connect button selected, stopping server");
 						socket.close();
 						running = false;
 						gui.ConnectButton.setText("Start Server");
 						gui.InfoLabel.setText("Server Stopped");
-						gui.PortField.setEditable(true);
 					}
 				} catch (Exception ex) {
 					System.out.println("RPSServer() - Unknown connection error");
@@ -52,7 +50,6 @@ public class RockPaperScissorsServer {
 		System.out.println("main() - SERVER PROGRAM STARTED");
 		RockPaperScissorsServer server = new RockPaperScissorsServer();
 		//
-		server.gui.PortField.setText("7274");
 		server.gui.ConnectButton.doClick();
 		//
 		while (true) {
@@ -95,8 +92,8 @@ class Game {
 	}
 
 	public boolean shoot(Player player, char decision) {
-		System.out.println("shoot() - Player " + player.playernumber + " just moved " + decision);
-		if (player.playernumber == 1) {
+		System.out.println("shoot() - Player " + player.playerNumber + " just moved " + decision);
+		if (player.playerNumber == 1) {
 			p1move = decision;
 		} else {
 			p2move = decision;
@@ -110,7 +107,7 @@ class Game {
 	}
 
 	class Player extends Thread {
-		int playernumber;
+		int playerNumber;
 		Player opponent;
 		Socket socket;
 		BufferedReader in;
@@ -118,7 +115,7 @@ class Game {
 
 		public Player(Socket socket, int number) {
 			this.socket = socket;
-			this.playernumber = number;
+			this.playerNumber = number;
 			try {
 				in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 				out = new PrintWriter(socket.getOutputStream(), true);
@@ -138,7 +135,7 @@ class Game {
 				if (tied()) {
 					player.out.println("T");
 				} else {
-					player.out.println(winner(player.playernumber) ? "W" : "D");
+					player.out.println(winner(player.playerNumber) ? "W" : "D");
 				}
 			}
 		}
@@ -146,28 +143,29 @@ class Game {
 		public void run() {
 			try {
 				out.println("G");
-				System.out.println("PLAYER " + this.playernumber + " THREAD ==> run() - Sending Go sequence to player "
-						+ this.playernumber);
+				System.out.println("PLAYER " + this.playerNumber + " THREAD ==> run() - Sending Go sequence to player "
+						+ this.playerNumber);
 				while (true) {
 					String move = in.readLine();
 					if (move.startsWith("M")) {
 						if (shoot(this, move.charAt(1))) {
-							System.out.println("PLAYER " + this.playernumber + " THREAD ==> run()  - Player "
-									+ this.playernumber + " chose " + move.charAt(1));
+							System.out.println("PLAYER " + this.playerNumber + " THREAD ==> run()  - Player "
+									+ this.playerNumber + " chose " + move.charAt(1));
 							if (bothMoved()) {
 								if (tied()) {
 									out.println("T");
 								} else {
-									out.println(winner(this.playernumber) ? "W" : "D");
+									out.println(winner(this.playerNumber) ? "W" : "D");
 								}
 							}
 						}
 					} else if (move.startsWith("Q")) {
 						this.socket.close();
-						System.out.println("PLAYER " + this.playernumber + " THREAD ==> run()  - Player "
-								+ this.playernumber + " chose to quit");
+						System.out.println("PLAYER " + this.playerNumber + " THREAD ==> run()  - Player "
+								+ this.playerNumber + " chose to quit");
+						out.println("N");
 						return;
-					}
+					} 
 
 				}
 			} catch (Exception e) {

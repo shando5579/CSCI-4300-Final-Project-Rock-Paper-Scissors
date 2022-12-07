@@ -14,109 +14,95 @@ public class RockPaperScissorsClient {
 
 	private ClientGUI gui;
 	private Socket socket;
+	private static int PORT = 8081;
+	private boolean connected;
+	
 	private BufferedReader in;
 	private PrintWriter out;
-	private int playernumber;
-	private boolean connected;
+	
+	private int playerNumber;
 
-	public RockPaperScissorsClient() throws Exception {
+	public RockPaperScissorsClient(String serverAddress) throws Exception {
 		gui = new ClientGUI();
 		gui.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		gui.ConnectButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				try {
-					if (!connected) {
-						System.out.println("RPSClient() - Connect button selected, connecting to server");
-						socket = new Socket(gui.IPField.getText(), Integer.parseInt(gui.PortField.getText()));
-						in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-						out = new PrintWriter(socket.getOutputStream(), true);
-						if (socket.isConnected())
-							connected = true;
-						gui.ConnectButton.setText("Disconnect");
-						gui.InfoLabel.setText("Connected");
-						gui.IPField.setEditable(false);
-						gui.PortField.setEditable(false);
-					} else {
-						System.out.println("RPSClient() - Connect button selected, disconnecting from server");
-						connected = false;
-						gui.ConnectButton.setText("Connect");
-						gui.InfoLabel.setText("Disconnected");
-						gui.IPField.setEditable(true);
-						gui.PortField.setEditable(true);
-					}
-				} catch (Exception ex) {
-					System.out.println("RPSClient() - Unknown connection error");
-					gui.InfoLabel.setText("Connection error");
-					ex.printStackTrace();
-				}
+		try {
+			if (!connected) {
+				gui.infoLabel.setText("Attempting to connect to " + serverAddress + ": " + PORT);
+				socket = new Socket(serverAddress, PORT);
+				in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+				out = new PrintWriter(socket.getOutputStream(), true);
+				if (socket.isConnected())
+					connected = true;
+				gui.infoLabel.setText("Connected");
+			} else {
+				gui.infoLabel.setText("Disconnected");
+				connected = false;
 			}
-		});
-		gui.RockButton.addActionListener(new ActionListener() {
+		} catch (Exception e) {
+			gui.infoLabel.setText("A connection error has occured - check if server is running");
+			e.printStackTrace();
+		}
+		
+		gui.rockButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				System.out.println("RPSClient() - Rock selected");
 				out.println("MR");
-				gui.RockButton.setEnabled(false);
-				gui.PaperButton.setEnabled(false);
-				gui.ScissorsButton.setEnabled(false);
-				gui.InfoLabel.setText("You selected Rock; Waiting for Opponent");
+				gui.rockButton.setEnabled(false);
+				gui.paperButton.setEnabled(false);
+				gui.scissorsButton.setEnabled(false);
+				gui.infoLabel.setText("You selected Rock; Waiting for Opponent");
 			}
 		});
-		gui.PaperButton.addActionListener(new ActionListener() {
+		gui.paperButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				System.out.println("RPSClient() - Paper selected");
 				out.println("MP");
-				gui.RockButton.setEnabled(false);
-				gui.PaperButton.setEnabled(false);
-				gui.ScissorsButton.setEnabled(false);
-				gui.InfoLabel.setText("You selected Paper; Waiting for Opponent");
+				gui.rockButton.setEnabled(false);
+				gui.paperButton.setEnabled(false);
+				gui.scissorsButton.setEnabled(false);
+				gui.infoLabel.setText("You selected Paper; Waiting for Opponent");
 			}
 		});
-		gui.ScissorsButton.addActionListener(new ActionListener() {
+		gui.scissorsButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				System.out.println("RPSClient() - Scissors selected");
 				out.println("MS");
-				gui.RockButton.setEnabled(false);
-				gui.PaperButton.setEnabled(false);
-				gui.ScissorsButton.setEnabled(false);
-				gui.InfoLabel.setText("You selected Scissors; Waiting for Opponent");
+				gui.rockButton.setEnabled(false);
+				gui.paperButton.setEnabled(false);
+				gui.scissorsButton.setEnabled(false);
+				gui.infoLabel.setText("You selected Scissors; Waiting for Opponent");
 			}
 		});
 	}
 
 	public void play() throws Exception {
-		String serverresponse;
+		String serverResponse;
 		try {
-			serverresponse = in.readLine();
-			if (serverresponse.startsWith("N")) {
+			serverResponse = in.readLine();
+			if (serverResponse.startsWith("N")) {
 				System.out.println("play() - server sent N");
-				this.playernumber = Integer.parseInt(serverresponse.substring(1));
-				gui.setTitle("Rock Paper Scissors - Player #" + this.playernumber);
-				gui.InfoLabel.setText("Connected - Waiting for Opponent");
+				this.playerNumber = Integer.parseInt(serverResponse.substring(1));
+				gui.setTitle("Rock Paper Scissors - Player #" + this.playerNumber);
+				gui.infoLabel.setText("Connected - Waiting for Opponent");
 			}
 			while (true) {
-				serverresponse = in.readLine();
-				if (serverresponse != null) {
-					System.out.println("play() - server sent " + serverresponse);
-					if (serverresponse.startsWith("G")) {
+				serverResponse = in.readLine();
+				System.out.println(serverResponse);
+				if (serverResponse != null) {
+					if (serverResponse.startsWith("G")) {
 						System.out.println("play() - server sent G");
-						gui.InfoLabel.setText("Opponent Connected - Go!");
-						gui.RockButton.setEnabled(true);
-						gui.PaperButton.setEnabled(true);
-						gui.ScissorsButton.setEnabled(true);
+						gui.infoLabel.setText("All Players Connected - Make Your Choice");
+						gui.rockButton.setEnabled(true);
+						gui.paperButton.setEnabled(true);
+						gui.scissorsButton.setEnabled(true);
 
-					} else if (serverresponse.startsWith("W")) {
-						System.out.println("play() - server sent W");
-						gui.InfoLabel.setText("Victory!");
+					} else if (serverResponse.startsWith("W")) {
+						gui.infoLabel.setText("You have won!");
 						TimeUnit.SECONDS.sleep(1);
 						break;
-					} else if (serverresponse.startsWith("D")) {
-						System.out.println("play() - server sent D");
-						gui.InfoLabel.setText("Defeat!");
+					} else if (serverResponse.startsWith("D")) {
+						gui.infoLabel.setText("You have been beaten");
 						TimeUnit.SECONDS.sleep(1);
 						break;
-					} else if (serverresponse.startsWith("T")) {
-						System.out.println("play() - server sent T");
-						gui.InfoLabel.setText("Tie!");
+					} else if (serverResponse.startsWith("T")) {
+						gui.infoLabel.setText("You have both tied");
 						TimeUnit.SECONDS.sleep(1);
 						break;
 					}
@@ -128,20 +114,16 @@ public class RockPaperScissorsClient {
 	}
 
 	private boolean rematch() {
-		System.out.println("rematch() - Prompting");
-		int response = JOptionPane.showConfirmDialog(gui, "Do you wish to play again?", "Rematch",
-				JOptionPane.YES_NO_OPTION);
+		int response = JOptionPane.showConfirmDialog(gui, "Do you want to play again?", "Rock Paper Scissors - Rematch", JOptionPane.YES_NO_OPTION);
 		return response == JOptionPane.YES_OPTION;
 	}
 
 	public static void main(String[] args) throws Exception {
-		System.out.println("CLIENT PROGRAM STARTED");
-		RockPaperScissorsClient client = new RockPaperScissorsClient();
-		//
-		client.gui.IPField.setText("192.168.0.225");
-		client.gui.PortField.setText("7274");
-		client.gui.ConnectButton.doClick();
-		//
+		System.out.println("Starting client program...");
+		String serverAddress = (args.length == 0) ? "localhost" : args[0];
+		System.out.println(serverAddress);
+		RockPaperScissorsClient client = new RockPaperScissorsClient(serverAddress);
+		
 		while (true) {
 			if (client.connected) {
 				System.out.println("main() - client connected; starting play");
@@ -149,13 +131,12 @@ public class RockPaperScissorsClient {
 				if (!client.rematch()) {
 					System.out.println("main() - user declined rematch");
 					client.out.println("Q");
+					client.socket.close();
+					client.gui.setVisible(false);
+					client.gui.dispose();
 					break;
 				} else {
 					System.out.println("main() - user accepted rematch");
-					client.gui.RockButton.setEnabled(true);
-					client.gui.PaperButton.setEnabled(true);
-					client.gui.ScissorsButton.setEnabled(true);
-					client.gui.InfoLabel.setText("Go!");
 				}
 			}
 			TimeUnit.SECONDS.sleep(1);

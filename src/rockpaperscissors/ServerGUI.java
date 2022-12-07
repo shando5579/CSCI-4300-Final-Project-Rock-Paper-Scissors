@@ -3,9 +3,9 @@ package rockpaperscissors;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
+import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.JButton;
-import javax.swing.JLabel;
 
 public class ServerGUI extends JFrame {
 
@@ -22,13 +22,6 @@ public class ServerGUI extends JFrame {
 		JPanel connPanel = new JPanel();
 		mainPanel.add(connPanel, BorderLayout.NORTH);
 
-		JLabel PortLabel = new JLabel("Port: ");
-		connPanel.add(PortLabel);
-
-		PortField = new JTextField();
-		connPanel.add(PortField);
-		PortField.setColumns(10);
-
 		ConnectButton = new JButton("Start Server");
 		connPanel.add(ConnectButton);
 
@@ -42,10 +35,12 @@ public class ServerGUI extends JFrame {
 		InfoLabel.setToolTipText("");
 		notifPanel.add(InfoLabel);
 
-		this.setTitle("Rock, Paper, Scissors Server");
-		this.setSize(500, 200);
+		// Set the title and default close operation.
+	    this.setTitle("Rock Paper Scissors - Server");
+		this.setSize(400, 100);
 		this.setResizable(false);
 		this.setVisible(true);
+		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 
 }
