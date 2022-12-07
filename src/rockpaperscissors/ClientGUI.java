@@ -53,6 +53,7 @@ public class ClientGUI extends JFrame {
 		notifPanel.add(infoLabel);
 		
 		this.setTitle("Rock Paper Scissors - Client");
+		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.setSize(600, 300);
 		this.setResizable(false);
 		this.setVisible(true);

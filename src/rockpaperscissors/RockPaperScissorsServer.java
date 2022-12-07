@@ -147,25 +147,26 @@ class Game {
 						+ this.playerNumber);
 				while (true) {
 					String move = in.readLine();
-					if (move.startsWith("M")) {
-						if (shoot(this, move.charAt(1))) {
-							System.out.println("PLAYER " + this.playerNumber + " THREAD ==> run()  - Player "
-									+ this.playerNumber + " chose " + move.charAt(1));
-							if (bothMoved()) {
-								if (tied()) {
-									out.println("T");
-								} else {
-									out.println(winner(this.playerNumber) ? "W" : "D");
+					if (move != null) {
+						if (move.startsWith("M")) {
+							if (shoot(this, move.charAt(1))) {
+								System.out.println("PLAYER " + this.playerNumber + " THREAD ==> run()  - Player "
+										+ this.playerNumber + " chose " + move.charAt(1));
+								if (bothMoved()) {
+									if (tied()) {
+										out.println("T");
+									} else {
+										out.println(winner(this.playerNumber) ? "W" : "D");
+									}
 								}
 							}
-						}
-					} else if (move.startsWith("Q")) {
-						this.socket.close();
-						System.out.println("PLAYER " + this.playerNumber + " THREAD ==> run()  - Player "
-								+ this.playerNumber + " chose to quit");
-						out.println("N");
-						return;
-					} 
+						} else if (move.startsWith("Q")) {
+							this.socket.close();
+							System.out.println("PLAYER " + this.playerNumber + " THREAD ==> run()  - Player "
+									+ this.playerNumber + " chose to quit");
+							return;
+						} 
+					}
 
 				}
 			} catch (Exception e) {
