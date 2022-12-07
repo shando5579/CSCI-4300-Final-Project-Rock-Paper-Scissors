@@ -1,173 +1,164 @@
 package rockpaperscissors;
 
-import java.awt.Color;
-import java.awt.GridLayout;
-import java.awt.Image;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
+import java.util.concurrent.TimeUnit;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import java.awt.Toolkit;
-import javax.swing.GroupLayout;
-import javax.swing.GroupLayout.Alignment;
-import javax.swing.LayoutStyle.ComponentPlacement;
 
 public class RockPaperScissorsClient {
-	
-	private JFrame frame = new JFrame("Rock Paper Scissors Game Client");
-    private JLabel messageLabel = new JLabel("");
-    private JButton rockButton, paperButton, scissorsButton;
-	
-	private static int PORT = 8901;
-    private Socket socket;
-    private BufferedReader in;
-    private PrintWriter out;
-    private JLabel lblNewLabel;
-    private JLabel lblNewLabel_1;
-    private JLabel label;
-    private JPanel panel_1;
 
-    // Establishes connection and sets up GUI
-	/**
-	 * @wbp.parser.entryPoint
-	 */
-	public RockPaperScissorsClient(String serverAddress) throws Exception {
-		// Setup networking
-        socket = new Socket(serverAddress, PORT);
-        in = new BufferedReader(new InputStreamReader(
-            socket.getInputStream()));
-        out = new PrintWriter(socket.getOutputStream(), true);
-        
-        // Layout GUI
-        messageLabel.setBackground(Color.lightGray);
-        frame.getContentPane().add(messageLabel, "South");
+	private ClientGUI gui;
+	private Socket socket;
+	private BufferedReader in;
+	private PrintWriter out;
+	private int playernumber;
+	private boolean connected;
 
-        JPanel panel = new JPanel();
-        panel.setBackground(Color.white);
-        frame.getContentPane().add(panel, "Center");
-        
-        label = new JLabel("");
-        label.setIcon(new ImageIcon(RockPaperScissorsClient.class.getResource("/images/scissors.png")));
-        
-        lblNewLabel_1 = new JLabel("");
-        lblNewLabel_1.setIcon(new ImageIcon(RockPaperScissorsClient.class.getResource("/images/rock.png")));
-        
-        lblNewLabel = new JLabel("");
-        lblNewLabel.setIcon(new ImageIcon(RockPaperScissorsClient.class.getResource("/images/paper.png")));
-        
-        panel_1 = new JPanel();
-        
-        
-        //Adds buttons
-        rockButton = new JButton("Rock");
-        panel_1.add(rockButton);
-        paperButton = new JButton("Paper");
-        panel_1.add(paperButton);
-        scissorsButton = new JButton("Scissors");
-        panel_1.add(scissorsButton);
-        GroupLayout gl_panel = new GroupLayout(panel);
-        gl_panel.setHorizontalGroup(
-        	gl_panel.createParallelGroup(Alignment.LEADING)
-        		.addGroup(gl_panel.createSequentialGroup()
-        			.addContainerGap()
-        			.addGroup(gl_panel.createParallelGroup(Alignment.TRAILING, false)
-        				.addComponent(panel_1, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        				.addGroup(Alignment.LEADING, gl_panel.createSequentialGroup()
-        					.addComponent(lblNewLabel_1)
-        					.addGap(6)
-        					.addComponent(lblNewLabel)
-        					.addPreferredGap(ComponentPlacement.RELATED)
-        					.addComponent(label)))
-        			.addContainerGap(227, Short.MAX_VALUE))
-        );
-        gl_panel.setVerticalGroup(
-        	gl_panel.createParallelGroup(Alignment.LEADING)
-        		.addGroup(gl_panel.createSequentialGroup()
-        			.addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
-        				.addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
-        					.addComponent(lblNewLabel_1)
-        					.addComponent(label))
-        				.addComponent(lblNewLabel))
-        			.addGap(18)
-        			.addComponent(panel_1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-        			.addGap(220))
-        );
-        panel.setLayout(gl_panel);
-
+	public RockPaperScissorsClient() throws Exception {
+		gui = new ClientGUI();
+		gui.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		gui.ConnectButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					if (!connected) {
+						System.out.println("RPSClient() - Connect button selected, connecting to server");
+						socket = new Socket(gui.IPField.getText(), Integer.parseInt(gui.PortField.getText()));
+						in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+						out = new PrintWriter(socket.getOutputStream(), true);
+						if (socket.isConnected())
+							connected = true;
+						gui.ConnectButton.setText("Disconnect");
+						gui.InfoLabel.setText("Connected");
+						gui.IPField.setEditable(false);
+						gui.PortField.setEditable(false);
+					} else {
+						System.out.println("RPSClient() - Connect button selected, disconnecting from server");
+						connected = false;
+						gui.ConnectButton.setText("Connect");
+						gui.InfoLabel.setText("Disconnected");
+						gui.IPField.setEditable(true);
+						gui.PortField.setEditable(true);
+					}
+				} catch (Exception ex) {
+					System.out.println("RPSClient() - Unknown connection error");
+					gui.InfoLabel.setText("Connection error");
+					ex.printStackTrace();
+				}
+			}
+		});
+		gui.RockButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				System.out.println("RPSClient() - Rock selected");
+				out.println("MR");
+				gui.RockButton.setEnabled(false);
+				gui.PaperButton.setEnabled(false);
+				gui.ScissorsButton.setEnabled(false);
+				gui.InfoLabel.setText("You selected Rock; Waiting for Opponent");
+			}
+		});
+		gui.PaperButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				System.out.println("RPSClient() - Paper selected");
+				out.println("MP");
+				gui.RockButton.setEnabled(false);
+				gui.PaperButton.setEnabled(false);
+				gui.ScissorsButton.setEnabled(false);
+				gui.InfoLabel.setText("You selected Paper; Waiting for Opponent");
+			}
+		});
+		gui.ScissorsButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				System.out.println("RPSClient() - Scissors selected");
+				out.println("MS");
+				gui.RockButton.setEnabled(false);
+				gui.PaperButton.setEnabled(false);
+				gui.ScissorsButton.setEnabled(false);
+				gui.InfoLabel.setText("You selected Scissors; Waiting for Opponent");
+			}
+		});
 	}
-	
-	public void playGame() throws Exception {
-		
-		String response;
-        try {
-            response = in.readLine();
-            if (response.startsWith("WELCOME")) {
-                char mark = response.charAt(16);
-                frame.setTitle("Rock Paper Scissors - Player #" + mark);
-                frame.setIconImage(Toolkit.getDefaultToolkit().getImage(RockPaperScissorsClient.class.getResource("/images/" + mark + ".png")));
-                
-            }
-            while (true) {
-                response = in.readLine();
-                if (response.startsWith("OPPONENT_CHOSE")) {
-                    messageLabel.setText("Opponent chose, your turn");
-                } else if (response.startsWith("VICTORY")) {
-                    messageLabel.setText("You win");
-                    break;
-                } else if (response.startsWith("DEFEAT")) {
-                    messageLabel.setText("You lose");
-                    break;
-                } else if (response.startsWith("TIE")) {
-                    messageLabel.setText("You tied");
-                    break;
-                } else if (response.startsWith("MESSAGE")) {
-                    messageLabel.setText(response.substring(8));
-                }
-            }
-            out.println("QUIT");
-        }
-        finally {
-            socket.close();
-        }
-        
+
+	public void play() throws Exception {
+		String serverresponse;
+		try {
+			serverresponse = in.readLine();
+			if (serverresponse.startsWith("N")) {
+				System.out.println("play() - server sent N");
+				this.playernumber = Integer.parseInt(serverresponse.substring(1));
+				gui.setTitle("Rock Paper Scissors - Player #" + this.playernumber);
+				gui.InfoLabel.setText("Connected - Waiting for Opponent");
+			}
+			while (true) {
+				serverresponse = in.readLine();
+				if (serverresponse != null) {
+					System.out.println("play() - server sent " + serverresponse);
+					if (serverresponse.startsWith("G")) {
+						System.out.println("play() - server sent G");
+						gui.InfoLabel.setText("Opponent Connected - Go!");
+						gui.RockButton.setEnabled(true);
+						gui.PaperButton.setEnabled(true);
+						gui.ScissorsButton.setEnabled(true);
+
+					} else if (serverresponse.startsWith("W")) {
+						System.out.println("play() - server sent W");
+						gui.InfoLabel.setText("Victory!");
+						TimeUnit.SECONDS.sleep(1);
+						break;
+					} else if (serverresponse.startsWith("D")) {
+						System.out.println("play() - server sent D");
+						gui.InfoLabel.setText("Defeat!");
+						TimeUnit.SECONDS.sleep(1);
+						break;
+					} else if (serverresponse.startsWith("T")) {
+						System.out.println("play() - server sent T");
+						gui.InfoLabel.setText("Tie!");
+						TimeUnit.SECONDS.sleep(1);
+						break;
+					}
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
-	
-	private boolean wantsToPlayAgain() {
-        int response = JOptionPane.showConfirmDialog(frame,
-            "Want to play again?",
-            "Rock Paper Scissors - Play Again?",
-            JOptionPane.YES_NO_OPTION);
-        frame.dispose();
-        return response == JOptionPane.YES_OPTION;
-    }
-    
-	
+
+	private boolean rematch() {
+		System.out.println("rematch() - Prompting");
+		int response = JOptionPane.showConfirmDialog(gui, "Do you wish to play again?", "Rematch",
+				JOptionPane.YES_NO_OPTION);
+		return response == JOptionPane.YES_OPTION;
+	}
+
 	public static void main(String[] args) throws Exception {
-        while (true) {
-            String serverAddress = (args.length == 0) ? "localhost" : args[0];
-            RockPaperScissorsClient client = new RockPaperScissorsClient(serverAddress);
-            
-            client.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            client.frame.setSize(435, 250);
-            client.frame.setVisible(true);
-            client.frame.setResizable(false);
-            client.playGame();
-            
-            if (!client.wantsToPlayAgain()) {
-                break;
-            }
-            
-            
-        }
-    }
-
+		System.out.println("CLIENT PROGRAM STARTED");
+		RockPaperScissorsClient client = new RockPaperScissorsClient();
+		//
+		client.gui.IPField.setText("192.168.0.225");
+		client.gui.PortField.setText("7274");
+		client.gui.ConnectButton.doClick();
+		//
+		while (true) {
+			if (client.connected) {
+				System.out.println("main() - client connected; starting play");
+				client.play();
+				if (!client.rematch()) {
+					System.out.println("main() - user declined rematch");
+					client.out.println("Q");
+					break;
+				} else {
+					System.out.println("main() - user accepted rematch");
+					client.gui.RockButton.setEnabled(true);
+					client.gui.PaperButton.setEnabled(true);
+					client.gui.ScissorsButton.setEnabled(true);
+					client.gui.InfoLabel.setText("Go!");
+				}
+			}
+			TimeUnit.SECONDS.sleep(1);
+		}
+	}
 }
