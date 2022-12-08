@@ -18,7 +18,6 @@ public class ServerGUI extends JFrame
     private JPanel center; 	// Center panel
     private JPanel north; 	// North panel
     private JPanel south; 	// South panel
-    JButton connect;
     JLabel status;
 
 	public ServerGUI() 
@@ -39,10 +38,6 @@ public class ServerGUI extends JFrame
 		// Creating panel for connection button
 		north = new JPanel();
 		center.add(north, BorderLayout.NORTH);
-
-		// Creating the connection button - aka start/stop server button
-		connect = new JButton();
-		north.add(connect);
 
 		// Creating panel to display the status of server
 		JPanel south = new JPanel();

@@ -108,19 +108,22 @@ public class RockPaperScissorsClient {
 						gui.paperButton.setEnabled(true);
 						gui.scissorsButton.setEnabled(true);
 
-						// Outputs to label if player won
+					// Outputs to label if a player won or game was tied
 					} else if (serverResponse.startsWith("WIN")) {
+						System.out.println("PLAYER #" + this.playerNumber + " - GOT WIN PACKET");
 						gui.infoLabel.setText("You have won!");
 						break;
 						
-						// Outputs to label if player was defeated
+					// Outputs to label if player was defeated
 					} else if (serverResponse.startsWith("DEFEAT")) {
-						gui.infoLabel.setText("You have been defeated");
+						System.out.println("PLAYER #" + this.playerNumber + " - GOT DEFEAT PACKET");
+						gui.infoLabel.setText("You have been defeated!");
 						break;
 						
-						// Outputs to label if both players tied
+					// Outputs to label if both players tied
 					} else if (serverResponse.startsWith("TIE")) {
-						gui.infoLabel.setText("You have both tied");
+						System.out.println("PLAYER #" + this.playerNumber + " - GOT TIE PACKET");
+						gui.infoLabel.setText("You have both tied!");
 						break;
 					}
 				}
@@ -138,7 +141,6 @@ public class RockPaperScissorsClient {
 				"Rock Paper Scissors - Rematch", 
 				JOptionPane.YES_NO_OPTION);
 		gui.dispose();
-		out.println("QUIT");
 		return response == JOptionPane.YES_OPTION;
 	}
 
@@ -150,6 +152,7 @@ public class RockPaperScissorsClient {
 			client.play();																	// Tells the client to play the game
 			
 				if (!client.wantsToPlayAgain()) {		// Once client is done playing, asks if it wants to play again
+					client.out.println("QUIT");
 					break;
 				}
 		}
